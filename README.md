@@ -1,7 +1,7 @@
 #  Admin Dashboard API
 
 ## Description
-The **Admin Dashboard API** is a secure and scalable backend service designed to power admin panels.  
+The **Admin Dashboard RBAC API** is a secure and scalable backend service designed to power admin panels.  
 It implements **role-based access control (RBAC)**, enabling different levels of permissions for admins, managers, and regular users.  
 This project is ideal for applications that require fine-grained access management and a structured approach to user authorization.
 
@@ -12,6 +12,15 @@ This project is ideal for applications that require fine-grained access manageme
 - Protected routes for admins, managers and users
 - Scalable RESTful API design
 - Environment configuration with `.env`
+- HTTP-only cookies for refresh tokens
+
+## User Management
+
+-Signup & Login
+
+-Role-based access control (RBAC)
+
+-Logout (invalidate refresh token)
 
 ## Installation & Usage
 
@@ -30,15 +39,22 @@ node server.js
 
 project-root/
 ├── controllers/
+│   └── authController.js
 ├── models/
-├── routes/ 
+│   ├── User.js
+│   └── refreshToken.js
+├── routes/
+│   └── authRoutes.js 
 ├── middleware/
+│   └── authMiddleware.js
 ├── config/
+│   └── db.js
 ├── tests/
 ├── server.js
 ├── .env
 ├── .gitignore
 └── README.md
+
 
 
 ## Technologies used

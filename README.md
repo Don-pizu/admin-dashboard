@@ -132,7 +132,8 @@ project-root/
 
 
 
-
+## Deployed link
+  https://admin-dashboard-3qy9.onrender.com
 
 
 

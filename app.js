@@ -5,17 +5,18 @@ const path = require('path');
 const dotenv = require ('dotenv');
 const connectDB = require('./config/db');
 
-/*
 // NEW: security libs
 const cors = require("cors");
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const sanitize = require('mongo-sanitize');
 const xss = require('xss-clean');
-*/
 
 
 const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const logsRoutes = require('./routes/logsRoutes');
+const statsRoutes = require('./routes/statsRoutes');
 
 
 
@@ -25,8 +26,6 @@ dotenv.config();
 //DB connect
 connectDB();
 
-
-/*
 // Security hardening
 //helmet
 app.use(
@@ -94,9 +93,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-//server frontend static
-app.use(express.static(path.join(__dirname, "frontend"))); // serve frontend
-*/
 
 
 // Middleware to parse JSON
@@ -107,6 +103,8 @@ app.use(express.urlencoded({ extended: true }));
 
 //Routes
 app.use('/api/auth', authRoutes);
-
+app.use('/api', userRoutes);
+app.use('/api', logsRoutes);
+app.use('/api/stats', statsRoutes);
 
 module.exports = app;

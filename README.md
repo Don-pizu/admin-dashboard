@@ -15,12 +15,22 @@ This project is ideal for applications that require fine-grained access manageme
 - HTTP-only cookies for refresh tokens
 
 ## User Management
+- Signup & Login with JWT authentication
 
--Signup & Login
+- Role-based access control (default role = user)
 
--Role-based access control (RBAC)
+- Logout (invalidate refresh token in DB)
 
--Logout (invalidate refresh token)
+- LogActivity for auditing:
+
+				login_success
+
+				login_failed
+
+				logout
+
+				role_change
+
 
 ## Installation & Usage
 
@@ -38,22 +48,35 @@ npm install
 node server.js
 
 project-root/
-├── controllers/
-│   └── authController.js
-├── models/
-│   ├── User.js
-│   └── refreshToken.js
-├── routes/
-│   └── authRoutes.js 
-├── middleware/
-│   └── authMiddleware.js
 ├── config/
 │   └── db.js
+├── controllers/
+│   ├── authController.js
+│   ├── logsController.js
+│   ├── statsController.js
+│   └── userController.js
+├── middleware/
+│   ├── authMiddleware.js
+│   ├── errorHandler.js
+│   ├── rateLimiter.js
+│   └── roleMiddleware.js
+├── models/
+│   ├── User.js
+│   ├── refreshToken.js
+│   └── logActivity.js
+├── routes/
+│   ├── authRoutes.js
+│   ├── logsRoutes.js
+│   ├── statsRoutes.js
+│   └── userRoutes.js
+├── utils/
+│   └── loggerActivity.js
 ├── tests/
 ├── server.js
 ├── .env
 ├── .gitignore
 └── README.md
+
 
 
 
@@ -65,8 +88,53 @@ project-root/
 -Bcrypt.js (password hashing)
 -dotenv (environment variables)
 -Helmet, Express-rate-limit, Mongo-sanitize, XSS-clean
--Jest
--Swagger
+
+
+## Auth Routes (/api/auth)
+
+| Method | Endpoint   | Description                               |
+| ------ | ---------- | ----------------------------------------- |
+| POST   | `/signup`  | Register a new user (default role = user) |
+| POST   | `/login`   | Login user & issue access + refresh token |
+| POST   | `/refresh` | Get new access token using refresh token  |
+| POST   | `/logout`  | Logout user and invalidate refresh token  |
+
+
+
+## User Routes (/api)
+
+| Method | Endpoint     | Access                        | Description    |
+| ------ | ------------ | ----------------------------- | -------------- |
+| GET    | `/users`     | Admin                         | Get all users  |
+| GET    | `/users/:id` | Admin / Manager / User (self) | Get user by ID |
+| PUT    | `/users/:id` | Admin / Manager / User (self) | Update user    |
+| DELETE | `/users/:id` | Admin                         | Delete user    |
+
+
+
+## Log Routes (/api)
+
+| Method | Endpoint    | Access          | Description                |
+| ------ | ----------- | --------------- | -------------------------- |
+| GET    | `/logs`     | Admin           | Get all logs               |
+| DELETE | `/logs/:id` | Admin           | Delete log by ID           |
+| DELETE | `/logs`     | Admin           | Delete all logs            |
+| GET    | `/export`   | Admin / Manager | Export logs (with filters) |
+
+
+## Stats Routes (/api/stats)
+
+| Method | Endpoint        | Access          | Description                   |
+| ------ | --------------- | --------------- | ----------------------------- |
+| GET    | `/users`        | Admin / Manager | Count users by role           |
+| GET    | `/logins`       | Admin / Manager | Count login success vs failed |
+| GET    | `/active-users` | Admin / Manager | Users active in last 24 hours |
+
+
+
+
+
+
 
 
 ## Author name

@@ -3,6 +3,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const RefreshToken = require('../models/refreshToken');
+const { logActivity, allowedActions } = require('../utils/loggerActivity');
 
 //Generate JWT access Token
 const createToken = (user) => {             // Create short-lived access token
@@ -62,23 +63,40 @@ exports.signup = async (req, res) => {
 
 
 //POST   login
+// POST login
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: 'User not found' });
+    if (!user) {
+      // Log failed attempt (user not found)
+      await logActivity({
+        userId: null,
+        actionType: allowedActions.LOGIN_FAILED,
+        details: { email },
+        req
+      });
+      return res.status(401).json({ message: 'User not found' });
+    }
 
     const matchPass = await user.matchPassword(password);
-    if (!matchPass)
-     return res.status(401).json({ message: 'Invalid Password' });
+    if (!matchPass) {
+      // Log failed attempt (wrong password)
+      await logActivity({
+        userId: user._id,
+        actionType: allowedActions.LOGIN_FAILED,
+        details: { email },
+        req
+      });
+      return res.status(401).json({ message: 'Invalid Password' });
+    }
 
-
-    // Generate tokens after verifying password
+    // ✅ Successful login
     const accessToken = createToken(user);
     const refreshToken = await createRefreshToken(user);
 
-    // Send refresh token in HTTP-only cooki
+    // Send refresh token in HTTP-only cookie
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -86,13 +104,21 @@ exports.login = async (req, res) => {
       maxAge: 1000 * 60 * 60 * 24 * 7
     });
 
+    // Log successful login
+    await logActivity({
+      userId: user._id,
+      actionType: allowedActions.LOGIN_SUCCESS,
+      details: { email: user.email },
+      req
+    });
 
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
-      token: accessToken
+      token: accessToken,
+      refresh: refreshToken
     });
 
   } catch (err) {
